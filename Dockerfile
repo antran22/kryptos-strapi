@@ -14,5 +14,5 @@ RUN yarn build
 
 EXPOSE 1337
 
-CMD ["yarn", "build"] 
+CMD ["yarn", "start"] 
 

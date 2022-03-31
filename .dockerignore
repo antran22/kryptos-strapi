@@ -1,0 +1,8 @@
+*
+!config
+!database
+!public
+!src
+!yarn.lock
+!favicon.ico
+!package.json

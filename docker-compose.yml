@@ -2,21 +2,54 @@ version: "3.8"
 
 services:
   app:
-    platform: linux/amd64
+    image: kryptos-strapi
     build:
       context: .
     restart: unless-stopped
     env_file:
       - .env
     volumes:
-      - ./app:/srv/app
-    depends_on:
-      - postgres
+    - app_data:/srv/app
+
+    networks:
+      internal:
+      traefik-public:
+
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+
+        - traefik.http.routers.$SERVICE_NAME-http.rule=Host(`$ADMIN_DOMAIN`)
+        - traefik.http.routers.$SERVICE_NAME-http.entrypoints=http
+        - traefik.http.routers.$SERVICE_NAME-http.middlewares=https-redirect
+
+        - traefik.http.routers.$SERVICE_NAME-https.rule=Host(`$ADMIN_DOMAIN`)
+        - traefik.http.routers.$SERVICE_NAME-https.entrypoints=https
+        - traefik.http.routers.$SERVICE_NAME-https.tls=true
+        - traefik.http.routers.$SERVICE_NAME-https.tls.certresolver=le
+
+        - traefik.http.services.$SERVICE_NAME.loadbalancer.server.port=1337
+
 
   postgres:
     image: postgres
-    restart: unless-stopped
     env_file:
       - .env
     volumes:
-      - ./data:/var/lib/postgresql/data
+      - db:/var/lib/postgresql/data
+    networks:
+      internal:
+
+networks:
+  internal:
+
+  traefik-public:
+    external: true
+    name: traefik-public
+
+
+volumes:
+  db:
+  app_data:
