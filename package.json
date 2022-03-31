@@ -17,6 +17,7 @@
     "@strapi/plugin-users-permissions": "4.1.6",
     "@strapi/strapi": "4.1.6",
     "better-sqlite3": "^7.5.0",
+    "pg": "^8.7.3",
     "strapi-plugin-wysiwyg-tui-editor": "^4.0.1"
   },
   "author": {
