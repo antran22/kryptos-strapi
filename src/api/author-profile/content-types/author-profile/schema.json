@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "author_profiles",
+  "info": {
+    "singularName": "author-profile",
+    "pluralName": "author-profiles",
+    "displayName": "AuthorProfile",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "bio": {
+      "type": "text"
+    },
+    "avatar": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    }
+  }
+}
