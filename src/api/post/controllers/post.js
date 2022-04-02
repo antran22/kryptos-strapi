@@ -6,10 +6,13 @@
 
 const { createCoreController } = require("@strapi/strapi").factories;
 const _ = require("lodash");
+const { stripImageField } = require("../../../utils");
 
 module.exports = createCoreController("api::post.post", ({ strapi }) => ({
   async find(ctx) {
-    const { query } = ctx;
+    const query = _.merge(ctx.query, {
+      populate: ["createdBy", "localizations", "category", "thumbnail"],
+    });
 
     const { results, pagination } = await strapi
       .service("api::post.post")
@@ -22,9 +25,14 @@ module.exports = createCoreController("api::post.post", ({ strapi }) => ({
     const postsWithSlimLocalization = postsWithAuthor.map(
       strapi.service("api::post.post").trimLocalizations
     );
+
+    const postsWithSlimImage = postsWithSlimLocalization.map((post) =>
+      stripImageField(post, "thumbnail")
+    );
+
     return {
       pagination,
-      results: postsWithSlimLocalization,
+      results: postsWithSlimImage,
     };
   },
 
@@ -33,7 +41,7 @@ module.exports = createCoreController("api::post.post", ({ strapi }) => ({
     const query = _.merge(ctx.query, {
       filters: { slug: { $eq: slug } },
       locale: "all",
-      populate: ["createdBy", "localizations"],
+      populate: ["createdBy", "localizations", "category", "thumbnail"],
     });
 
     const { results: posts } = await strapi
@@ -48,6 +56,10 @@ module.exports = createCoreController("api::post.post", ({ strapi }) => ({
       .service("api::post.post")
       .populateAuthor(post);
 
-    return strapi.service("api::post.post").trimLocalizations(postWithAuthor);
+    const postWithSlimImage = stripImageField(postWithAuthor, "thumbnail");
+
+    return strapi
+      .service("api::post.post")
+      .trimLocalizations(postWithSlimImage);
   },
 }));

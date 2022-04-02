@@ -5,6 +5,8 @@
  */
 
 const { createCoreService } = require("@strapi/strapi").factories;
+const { stripImageField } = require("../../../utils");
+const _ = require("lodash");
 
 module.exports = createCoreService("api::post.post", ({ strapi }) => ({
   async populateAuthor(post) {
@@ -24,8 +26,8 @@ module.exports = createCoreService("api::post.post", ({ strapi }) => ({
       .transformAuthorProfileEntity(authorProfile);
 
     return {
-      ...post,
-      author,
+      ..._.omit(post, "createdBy"),
+      author: stripImageField(author, "avatar"),
     };
   },
 
