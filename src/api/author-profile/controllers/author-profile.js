@@ -6,6 +6,7 @@
 
 const { createCoreController } = require("@strapi/strapi").factories;
 const _ = require("lodash");
+const { stripImageField } = require("../../../utils");
 const {
   isSingleType,
   constants: { DP_PUB_STATE_LIVE },
@@ -17,7 +18,7 @@ module.exports = createCoreController(
     async find(ctx) {
       const { query } = ctx;
 
-      const findResult = await strapi
+      const authors = await strapi
         .service("api::author-profile.author-profile")
         .find({
           ...query,
@@ -26,8 +27,8 @@ module.exports = createCoreController(
           populate: ["createdBy", "avatar"],
         });
 
-      findResult.results = await Promise.all(
-        findResult.results
+      const authorWithPostCount = await Promise.all(
+        authors.results
           .map(
             strapi.service("api::author-profile.author-profile")
               .transformAuthorProfileEntity
@@ -38,28 +39,42 @@ module.exports = createCoreController(
           )
       );
 
-      return findResult;
+      const authorsWithSlimAvatar = authorWithPostCount.map((author) =>
+        stripImageField(author, "avatar")
+      );
+
+      return { ...authors, results: authorsWithSlimAvatar };
     },
 
     async findOne(ctx) {
       const { id } = ctx.params;
 
-      const authorProfile = await strapi
-        .query("api::author-profile.author-profile")
-        .findOne({
-          createdBy: id,
-          isActive: true,
-          blocked: false,
+      const authorProfileResponse = await strapi
+        .service("api::author-profile.author-profile")
+        .find({
+          filters: {
+            createdBy: parseInt(id),
+          },
           populate: ["avatar", "createdBy"],
         });
+
+      if (
+        !authorProfileResponse.results ||
+        authorProfileResponse.results.length === 0
+      ) {
+        return ctx.notFound();
+      }
+      const authorProfile = authorProfileResponse.results[0];
 
       const author = strapi
         .service("api::author-profile.author-profile")
         .transformAuthorProfileEntity(authorProfile);
 
-      return await strapi
+      const authorWithPostCount = await strapi
         .service("api::author-profile.author-profile")
         .populatePostCount(author);
+
+      return stripImageField(authorWithPostCount, "avatar");
     },
 
     async findPosts(ctx) {
@@ -68,13 +83,19 @@ module.exports = createCoreController(
         filters: {
           createdBy: id,
         },
+        populate: ["thumbnail"],
         publicationState: DP_PUB_STATE_LIVE,
       });
+      const postsWithAuthor = await strapi
+        .service("api::post.post")
+        .populateAuthorOnMultiplePosts(posts.results);
+
+      const postsWithSlimThumbnail = postsWithAuthor.map((post) =>
+        stripImageField(post, "thumbnail")
+      );
       return {
         ...posts,
-        results: strapi
-          .service("api::post.post")
-          .populateAuthorOnMultiplePosts(posts),
+        results: postsWithSlimThumbnail,
       };
     },
   })

@@ -31,7 +31,9 @@ module.exports = createCoreService(
 
     async populatePostCount(author) {
       const id = author.id;
-      const postCount = await this.countPostByAuthor(id);
+      const postCount = await strapi
+        .service("api::author-profile.author-profile")
+        .countPostByAuthor(id);
 
       return {
         ...author,

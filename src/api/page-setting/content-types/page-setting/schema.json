@@ -1,0 +1,33 @@
+{
+  "kind": "singleType",
+  "collectionName": "page_settings",
+  "info": {
+    "singularName": "page-setting",
+    "pluralName": "page-settings",
+    "displayName": "PageSetting",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "introduction": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "text"
+    },
+    "featured_posts": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::post.post"
+    }
+  }
+}
