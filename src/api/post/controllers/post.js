@@ -18,6 +18,7 @@ module.exports = createCoreController("api::post.post", ({ strapi }) => ({
       .service("api::post.post")
       .find(query);
 
+
     const postsWithAuthor = await strapi
       .service("api::post.post")
       .populateAuthorOnMultiplePosts(results);
@@ -54,7 +55,7 @@ module.exports = createCoreController("api::post.post", ({ strapi }) => ({
 
     const postWithAuthor = await strapi
       .service("api::post.post")
-      .populateAuthor(post);
+      .transformCreatedByToAuthor(post);
 
     const postWithSlimImage = stripImageField(postWithAuthor, "thumbnail");
 
