@@ -5,6 +5,7 @@
  */
 
 const { createCoreController } = require("@strapi/strapi").factories;
+const _ = require("lodash");
 
 module.exports = createCoreController("api::post.post", ({ strapi }) => ({
   async find(ctx) {
@@ -28,13 +29,21 @@ module.exports = createCoreController("api::post.post", ({ strapi }) => ({
   },
 
   async findOne(ctx) {
-    const { params } = ctx;
-    const post = await strapi
+    const { id: slug } = ctx.params;
+    const query = _.merge(ctx.query, {
+      filters: { slug: { $eq: slug } },
+      locale: "all",
+      populate: ["createdBy", "localizations"],
+    });
+
+    const { results: posts } = await strapi
       .service("api::post.post")
-      .findOne(params.id, ctx.query);
-    if (!post) {
+      .find(query);
+    if (!posts || posts.length === 0) {
       return ctx.notFound();
     }
+    const post = posts[0];
+
     const postWithAuthor = await strapi
       .service("api::post.post")
       .populateAuthor(post);
