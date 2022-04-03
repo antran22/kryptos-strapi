@@ -25,7 +25,7 @@ module.exports = createCoreService("api::post.post", ({ strapi }) => ({
         return post;
       }
       const author = {
-        id,
+        id: authorId,
         bio: authorProfile.bio,
         avatar: authorProfile.avatar,
         name:
